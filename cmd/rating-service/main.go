@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/me-harshil/valorant-matchmaking/internal/rating"
 )
@@ -16,6 +18,20 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found, relying on real environment variables")
 	}
+
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+	}
+	defer pool.Close()
+
+	history := rating.NewHistoryStore(pool)
 
 	accountServiceURL := os.Getenv("ACCOUNT_SERVICE_URL")
 	if accountServiceURL == "" {
@@ -35,7 +51,7 @@ func main() {
 
 		results := rating.ProcessMatch(m)
 
-		if err := rating.PersistResults(results, client); err != nil {
+		if err := rating.PersistResults(req.Context(), results, history, client); err != nil {
 			http.Error(w, "failed to persist ratings: "+err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -1,6 +1,9 @@
 package rating
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type MatchResult struct {
 	TeamA      []PlayerInput
@@ -52,10 +55,14 @@ func applyTeam(inputs []PlayerInput, raw []PlayerOutput, mult map[string]float64
 	return out
 }
 
-func PersistResults(results []FinalRating, client *AccountClient) error {
+func PersistResults(ctx context.Context, results []FinalRating, history *HistoryStore, client *AccountClient) error {
 	for _, r := range results {
+		if err := history.Insert(ctx, r.ParticipantID, r); err != nil {
+			return fmt.Errorf("failed to write rating_history for participant %s: %w", r.ParticipantID, err)
+		}
+
 		if err := client.UpdateRating(r.PlayerID, r.MuAfter, r.SigmaAfter); err != nil {
-			return fmt.Errorf("failed to persist rating for %s: %w", r.PlayerID, err)
+			return fmt.Errorf("rating_history recorded for %s but account-service update FAILED: %w", r.PlayerID, err)
 		}
 	}
 	return nil
