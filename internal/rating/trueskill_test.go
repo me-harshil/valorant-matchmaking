@@ -11,8 +11,8 @@ func almostEqual(a, b, epsilon float64) bool {
 }
 
 func TestUpdateRatingsTwoOnTwo(t *testing.T) {
-	teamA := []PlayerInput{{"p1", 25.0, 8.333}, {"p2", 25.0, 8.333}}
-	teamB := []PlayerInput{{"p3", 25.0, 8.333}, {"p4", 25.0, 8.333}}
+	teamA := []PlayerInput{{"p1", "p1", 25.0, 8.333}, {"p2", "p2", 25.0, 8.333}}
+	teamB := []PlayerInput{{"p3", "p3", 25.0, 8.333}, {"p4", "p4", 25.0, 8.333}}
 
 	newA, _ := UpdateRatings(teamA, teamB, true, false)
 

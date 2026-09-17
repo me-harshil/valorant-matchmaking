@@ -6,15 +6,17 @@ import (
 )
 
 type PlayerInput struct {
-	PlayerID string
-	Mu       float64
-	Sigma    float64
+	PlayerID      string
+	ParticipantID string
+	Mu            float64
+	Sigma         float64
 }
 
 type PlayerOutput struct {
-	PlayerID string
-	Mu       float64
-	Sigma    float64
+	PlayerID      string
+	ParticipantID string
+	Mu            float64
+	Sigma         float64
 }
 
 func UpdateRatings(teamA, teamB []PlayerInput, teamAWon bool, isDraw bool) (newA, newB []PlayerOutput) {
@@ -43,18 +45,20 @@ func UpdateRatings(teamA, teamB []PlayerInput, teamAWon bool, isDraw bool) (newA
 	for _, p := range teamA {
 		r := result[p.PlayerID]
 		newA = append(newA, PlayerOutput{
-			PlayerID: p.PlayerID,
-			Mu:       r.Mean(),
-			Sigma:    r.Stddev(),
+			PlayerID:      p.PlayerID,
+			ParticipantID: p.ParticipantID,
+			Mu:            r.Mean(),
+			Sigma:         r.Stddev(),
 		})
 	}
 
 	for _, p := range teamB {
 		r := result[p.PlayerID]
 		newB = append(newB, PlayerOutput{
-			PlayerID: p.PlayerID,
-			Mu:       r.Mean(),
-			Sigma:    r.Stddev(),
+			PlayerID:      p.PlayerID,
+			ParticipantID: p.ParticipantID,
+			Mu:            r.Mean(),
+			Sigma:         r.Stddev(),
 		})
 	}
 	return

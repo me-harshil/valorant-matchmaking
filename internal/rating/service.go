@@ -13,6 +13,7 @@ type MatchResult struct {
 
 type FinalRating struct {
 	PlayerID              string
+	ParticipantID         string
 	MuBefore, SigmaBefore float64
 	MuAfter, SigmaAfter   float64
 }
@@ -40,11 +41,12 @@ func applyTeam(inputs []PlayerInput, raw []PlayerOutput, mult map[string]float64
 		old := byID[r.PlayerID]
 		adjustedMu := ApplyPerformanceWeight(old.Mu, r.Mu, mult[r.PlayerID])
 		out = append(out, FinalRating{
-			PlayerID:    r.PlayerID,
-			MuBefore:    old.Mu,
-			SigmaBefore: old.Sigma,
-			MuAfter:     adjustedMu,
-			SigmaAfter:  r.Sigma,
+			PlayerID:      r.PlayerID,
+			ParticipantID: old.ParticipantID,
+			MuBefore:      old.Mu,
+			SigmaBefore:   old.Sigma,
+			MuAfter:       adjustedMu,
+			SigmaAfter:    r.Sigma,
 		})
 	}
 	return out
