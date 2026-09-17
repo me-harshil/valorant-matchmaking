@@ -1,5 +1,7 @@
 package rating
 
+import "fmt"
+
 type MatchResult struct {
 	TeamA      []PlayerInput
 	TeamB      []PlayerInput
@@ -46,4 +48,13 @@ func applyTeam(inputs []PlayerInput, raw []PlayerOutput, mult map[string]float64
 		})
 	}
 	return out
+}
+
+func PersistResults(results []FinalRating, client *AccountClient) error {
+	for _, r := range results {
+		if err := client.UpdateRating(r.PlayerID, r.MuAfter, r.SigmaAfter); err != nil {
+			return fmt.Errorf("failed to persist rating for %s: %w", r.PlayerID, err)
+		}
+	}
+	return nil
 }
