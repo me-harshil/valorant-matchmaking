@@ -55,6 +55,19 @@ func main() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
+	r.Get("/players/{playerID}", func(w http.ResponseWriter, req *http.Request) {
+		playerID := chi.URLParam(req, "playerID")
+
+		p, err := store.GetPlayer(req.Context(), playerID)
+		if err != nil {
+			http.Error(w, "player not found", http.StatusNotFound)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(p)
+	})
+
 	log.Println("account-service listening on :8081")
 	log.Fatal(http.ListenAndServe(":8081", r))
 }
