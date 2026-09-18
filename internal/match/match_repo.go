@@ -2,6 +2,8 @@ package match
 
 import "context"
 
+const unselectedCharacter = "unselected"
+
 type CreateMatchInput struct {
 	Map   string
 	TeamA []ParticipantInput
@@ -30,20 +32,28 @@ func (s *Store) CreateMatch(ctx context.Context, input CreateMatchInput) (string
 	}
 
 	for _, p := range input.TeamA {
+		character := p.Character
+		if character == "" {
+			character = unselectedCharacter
+		}
 		_, err = tx.Exec(ctx,
 			`INSERT INTO match_participants (match_id, player_id, team, result, character)
 			 VALUES ($1, $2, 'A', 'draw', $3)`,
-			matchID, p.PlayerID, p.Character,
+			matchID, p.PlayerID, character,
 		)
 		if err != nil {
 			return "", err
 		}
 	}
 	for _, p := range input.TeamB {
+		character := p.Character
+		if character == "" {
+			character = unselectedCharacter
+		}
 		_, err = tx.Exec(ctx,
 			`INSERT INTO match_participants (match_id, player_id, team, result, character)
 			 VALUES ($1, $2, 'B', 'draw', $3)`,
-			matchID, p.PlayerID, p.Character,
+			matchID, p.PlayerID, character,
 		)
 		if err != nil {
 			return "", err
@@ -54,11 +64,12 @@ func (s *Store) CreateMatch(ctx context.Context, input CreateMatchInput) (string
 }
 
 type SubmitStatsInput struct {
-	PlayerID string
-	Result   string
-	Kills    int
-	Deaths   int
-	Assists  int
+	PlayerID  string
+	Result    string
+	Character string
+	Kills     int
+	Deaths    int
+	Assists   int
 }
 
 func (s *Store) SubmitStats(ctx context.Context, matchID string, stats []SubmitStatsInput) error {
@@ -71,9 +82,9 @@ func (s *Store) SubmitStats(ctx context.Context, matchID string, stats []SubmitS
 	for _, st := range stats {
 		_, err = tx.Exec(ctx,
 			`UPDATE match_participants
-			 SET result = $1, kills = $2, deaths = $3, assists = $4
-			 WHERE match_id = $5 AND player_id = $6`,
-			st.Result, st.Kills, st.Deaths, st.Assists, matchID, st.PlayerID,
+	 		SET result = $1, character = $2, kills = $3, deaths = $4, assists = $5
+	 		WHERE match_id = $6 AND player_id = $7`,
+			st.Result, st.Character, st.Kills, st.Deaths, st.Assists, matchID, st.PlayerID,
 		)
 		if err != nil {
 			return err
