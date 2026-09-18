@@ -51,3 +51,34 @@ func TestFindMatch_WideSpreadRejectedWhenFreshlyQueued(t *testing.T) {
 		t.Error("expected nil — spread too wide for freshly-queued players")
 	}
 }
+
+func TestSplitTeams_MinimizesDifference(t *testing.T) {
+	var players []QueuedPlayer
+	for i := 0; i < 10; i++ {
+		players = append(players, makePlayer("p"+string(rune('a'+i)), float64(40+i), 0))
+	}
+
+	teamA, teamB := SplitTeams(players)
+
+	if len(teamA) != 5 || len(teamB) != 5 {
+		t.Fatalf("got teamA=%d teamB=%d, want 5/5", len(teamA), len(teamB))
+	}
+
+	var sumA, sumB float64
+	for _, p := range teamA {
+		sumA += p.ConservativeRating
+	}
+	for _, p := range teamB {
+		sumB += p.ConservativeRating
+	}
+	avgA, avgB := sumA/5, sumB/5
+	diff := avgA - avgB
+	if diff < 0 {
+		diff = -diff
+	}
+
+	// ratings are 40..49 consecutive - best split should alternate, diff should be small
+	if diff > 1.0 {
+		t.Errorf("team average diff = %v, want a tight split (<=1.0)", diff)
+	}
+}
