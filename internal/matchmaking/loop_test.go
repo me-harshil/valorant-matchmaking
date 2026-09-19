@@ -17,11 +17,12 @@ func TestMatcherLoop(t *testing.T) {
 
 	matched := make(chan bool, 1)
 
-	go RunMatcherLoop(q, 50*time.Millisecond, func(teamA, teamB []QueuedPlayer) {
+	go RunMatcherLoop(q, 50*time.Millisecond, func(teamA, teamB []QueuedPlayer) error {
 		if len(teamA) != 5 || len(teamB) != 5 {
 			t.Errorf("expected two teams of 5 players each, got %d and %d", len(teamA), len(teamB))
 		}
 		matched <- true
+		return nil
 	})
 
 	select {

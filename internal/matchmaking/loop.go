@@ -1,9 +1,12 @@
 package matchmaking
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 // RunMatcherLoop ticks every interval, checks the queue for a match, and if found, removes those 10 players and calls onMatch with the two teams
-func RunMatcherLoop(q *Queue, interval time.Duration, onMatch func(teamA, teamB []QueuedPlayer)) {
+func RunMatcherLoop(q *Queue, interval time.Duration, onMatch func(teamA, teamB []QueuedPlayer) error) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -21,6 +24,11 @@ func RunMatcherLoop(q *Queue, interval time.Duration, onMatch func(teamA, teamB 
 		}
 
 		teamA, teamB := SplitTeams(match)
-		onMatch(teamA, teamB)
+		if err := onMatch(teamA, teamB); err != nil {
+			log.Printf("match creation failed, requeueing %d players: %v", len(match), err)
+			for _, p := range match {
+				q.AddPlayer(p)
+			}
+		}
 	}
 }

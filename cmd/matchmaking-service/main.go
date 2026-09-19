@@ -31,13 +31,13 @@ func main() {
 
 	queue := matchmaking.NewQueue()
 
-	go matchmaking.RunMatcherLoop(queue, 2*time.Second, func(teamA, teamB []matchmaking.QueuedPlayer) {
+	go matchmaking.RunMatcherLoop(queue, 2*time.Second, func(teamA, teamB []matchmaking.QueuedPlayer) error {
 		matchID, err := matchClient.CreateMatch(matchmaking.RandomMap(), teamA, teamB)
 		if err != nil {
-			log.Printf("ERROR: failed to create match: %v", err)
-			return
+			return err
 		}
 		log.Printf("Match created: %s (teamA=%d players, teamB=%d players)", matchID, len(teamA), len(teamB))
+		return nil
 	})
 
 	r := chi.NewRouter()
