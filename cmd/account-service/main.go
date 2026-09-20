@@ -68,6 +68,25 @@ func main() {
 		json.NewEncoder(w).Encode(p)
 	})
 
+	r.Post("/players", func(w http.ResponseWriter, req *http.Request) {
+		var body struct {
+			Username string `json:"username"`
+		}
+		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		playerID, err := store.CreatePlayer(req.Context(), body.Username)
+		if err != nil {
+			http.Error(w, "failed to create player: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"player_id": playerID})
+	})
+
 	log.Println("account-service listening on :8081")
 	log.Fatal(http.ListenAndServe(":8081", r))
 }

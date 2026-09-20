@@ -67,6 +67,22 @@ func main() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
+	r.Get("/matches", func(w http.ResponseWriter, req *http.Request) {
+		status := req.URL.Query().Get("status")
+		if status == "" {
+			status = "pending"
+		}
+
+		matches, err := store.ListMatchesByStatus(req.Context(), status)
+		if err != nil {
+			http.Error(w, "failed to list matches: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(matches)
+	})
+
 	log.Println("match-service listening on :8083")
 	log.Fatal(http.ListenAndServe(":8083", r))
 }

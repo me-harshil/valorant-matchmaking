@@ -101,3 +101,30 @@ func (s *Store) SubmitStats(ctx context.Context, matchID string, stats []SubmitS
 
 	return tx.Commit(ctx)
 }
+
+type MatchSummary struct {
+	MatchID string `json:"match_id"`
+	Status  string `json:"status"`
+	Map     string `json:"map"`
+}
+
+func (s *Store) ListMatchesByStatus(ctx context.Context, status string) ([]MatchSummary, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT match_id, status, map FROM matches WHERE status = $1 ORDER BY created_at DESC`,
+		status,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []MatchSummary
+	for rows.Next() {
+		var m MatchSummary
+		if err := rows.Scan(&m.MatchID, &m.Status, &m.Map); err != nil {
+			return nil, err
+		}
+		results = append(results, m)
+	}
+	return results, rows.Err()
+}
