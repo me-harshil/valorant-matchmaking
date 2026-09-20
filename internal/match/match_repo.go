@@ -128,3 +128,30 @@ func (s *Store) ListMatchesByStatus(ctx context.Context, status string) ([]Match
 	}
 	return results, rows.Err()
 }
+
+type ParticipantSummary struct {
+	ParticipantID string `json:"participant_id"`
+	PlayerID      string `json:"player_id"`
+	Team          string `json:"team"`
+}
+
+func (s *Store) GetParticipants(ctx context.Context, matchID string) ([]ParticipantSummary, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT participant_id, player_id, team FROM match_participants WHERE match_id = $1`,
+		matchID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []ParticipantSummary
+	for rows.Next() {
+		var p ParticipantSummary
+		if err := rows.Scan(&p.ParticipantID, &p.PlayerID, &p.Team); err != nil {
+			return nil, err
+		}
+		results = append(results, p)
+	}
+	return results, rows.Err()
+}

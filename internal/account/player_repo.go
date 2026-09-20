@@ -33,3 +33,28 @@ func (s *Store) CreatePlayer(ctx context.Context, username string) (string, erro
 	).Scan(&playerID)
 	return playerID, err
 }
+
+type PlayerSummary struct {
+	PlayerID string  `json:"player_id"`
+	Username string  `json:"username"`
+	Mu       float64 `json:"mu"`
+	Sigma    float64 `json:"sigma"`
+}
+
+func (s *Store) ListPlayers(ctx context.Context) ([]PlayerSummary, error) {
+	rows, err := s.pool.Query(ctx, `SELECT player_id, username, mu, sigma FROM players`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []PlayerSummary
+	for rows.Next() {
+		var p PlayerSummary
+		if err := rows.Scan(&p.PlayerID, &p.Username, &p.Mu, &p.Sigma); err != nil {
+			return nil, err
+		}
+		results = append(results, p)
+	}
+	return results, rows.Err()
+}

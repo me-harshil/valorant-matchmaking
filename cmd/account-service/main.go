@@ -87,6 +87,17 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]string{"player_id": playerID})
 	})
 
+	r.Get("/players", func(w http.ResponseWriter, req *http.Request) {
+		players, err := store.ListPlayers(req.Context())
+		if err != nil {
+			http.Error(w, "failed to list players: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(players)
+	})
+
 	log.Println("account-service listening on :8081")
 	log.Fatal(http.ListenAndServe(":8081", r))
 }

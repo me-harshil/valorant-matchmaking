@@ -83,6 +83,19 @@ func main() {
 		json.NewEncoder(w).Encode(matches)
 	})
 
+	r.Get("/matches/{matchID}/participants", func(w http.ResponseWriter, req *http.Request) {
+		matchID := chi.URLParam(req, "matchID")
+
+		participants, err := store.GetParticipants(req.Context(), matchID)
+		if err != nil {
+			http.Error(w, "failed to get participants: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(participants)
+	})
+
 	log.Println("match-service listening on :8083")
 	log.Fatal(http.ListenAndServe(":8083", r))
 }
