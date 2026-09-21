@@ -42,7 +42,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Post("/matches/process", func(w http.ResponseWriter, req *http.Request) {
+	r.Post("/ratings/process", func(w http.ResponseWriter, req *http.Request) {
 		var m rating.MatchResult
 		if err := json.NewDecoder(req.Body).Decode(&m); err != nil {
 			http.Error(w, "invalid request body", http.StatusBadRequest)

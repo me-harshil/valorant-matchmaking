@@ -368,7 +368,7 @@ func processMatch(matchID string) ([]Player, error) {
 		"TeamBStats": extractStats(statsPayload, "B", participants),
 		"TeamAWon":   teamAWon, "IsDraw": false,
 	})
-	resp2, err := http.Post(ratingURL+"/matches/process", "application/json", bytes.NewReader(ratingBody))
+	resp2, err := http.Post(ratingURL+"/ratings/process", "application/json", bytes.NewReader(ratingBody))
 	if err != nil {
 		return nil, err
 	}
